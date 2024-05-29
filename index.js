@@ -60,6 +60,7 @@ async function run() {
         const listSpot = req.params.email;
         console.log(listSpot);
         const result = await spotCollection.find({ email: listSpot }).toArray();
+        console.log(result);
         res.send(result);
       } catch {
         console.error(error);
@@ -75,6 +76,18 @@ async function run() {
         res.send(result);
       } catch {
         console.error(error);
+      }
+    });
+
+    // get for tourist-spots section
+
+    app.get("/get-all-spots", async (req, res) => {
+      try {
+        const query = {};
+        const result = await spotCollection.find(query).toArray();
+        res.send(result);
+      } catch (error) {
+        console.log(error);
       }
     });
   } finally {
