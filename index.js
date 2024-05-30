@@ -46,7 +46,7 @@ async function run() {
     app.post("/addList", async (req, res) => {
       try {
         const newAdd = req.body;
-        console.log(newAdd);
+        // console.log(newAdd);
         const result = await spotCollection.insertOne(newAdd);
         res.send(result);
       } catch {
@@ -58,29 +58,66 @@ async function run() {
     app.get("/myListSpot/:email", async (req, res) => {
       try {
         const listSpot = req.params.email;
-        console.log(listSpot);
+        // console.log(listSpot);
         const result = await spotCollection.find({ email: listSpot }).toArray();
-        console.log(result);
+
         res.send(result);
       } catch {
         console.error(error);
+      }
+    });
+
+    // Get single spot
+    app.get("/get-single-spot/:id", async (req, res) => {
+      try {
+        const id = req.params.id;
+
+        const result = await spotCollection.findOne({ _id: new ObjectId(id) });
+
+        res.send(result);
+      } catch (error) {
+        console.log(error);
       }
     });
 
     // get for view details
-    app.get("/viewSpot/:id", async (req, res) => {
+    // app.get("/viewSpot/:id", async (req, res) => {
+    //   try {
+    //     const id = req.params.id;
+    //     const query = { _id: new ObjectId(id) };
+    //     const result = await spotCollection.findOne(query);
+    //     res.send(result);
+    //   } catch {
+    //     console.error(error);
+    //   }
+    // });
+
+    // update spots by id
+    app.patch("/updateSpots/:id", async (req, res) => {
       try {
+        const data = req.body;
         const id = req.params.id;
-        const query = { _id: new ObjectId(id) };
-        const result = await spotCollection.findOne(query);
-        res.send(result);
-      } catch {
-        console.error(error);
+
+        console.log(id);
+        console.log(data);
+        const result = await spotCollection.findOneAndUpdate(
+          { _id: new ObjectId(id) },
+          { $set: data }
+        );
+
+        console.log(result);
+        if (result) {
+          res.send({
+            success: true,
+            message: "Successfully Updated Spot",
+          });
+        }
+      } catch (error) {
+        console.log(error);
       }
     });
 
-    // get for tourist-spots section
-
+    // get all spots
     app.get("/get-all-spots", async (req, res) => {
       try {
         const query = {};
@@ -88,6 +125,39 @@ async function run() {
         res.send(result);
       } catch (error) {
         console.log(error);
+      }
+    });
+
+    // delete data from the database
+
+    app.delete("/spots/:id", async (req, res) => {
+      const { id } = req.params;
+      try {
+        const spots = await spotCollection.findOne({ _id: new ObjectId(id) });
+
+        if (!spots?._id) {
+          res.send({
+            success: false,
+            error: "spots doesn't exist",
+          });
+          return;
+        }
+
+        const result = await spotCollection.deleteOne({
+          _id: new ObjectId(id),
+        });
+
+        if (result.deletedCount) {
+          res.send({
+            success: true,
+            message: `Successfully Deleted`,
+          });
+        }
+      } catch (error) {
+        res.send({
+          success: false,
+          error: error.message,
+        });
       }
     });
   } finally {
